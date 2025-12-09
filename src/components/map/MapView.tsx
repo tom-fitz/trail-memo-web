@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import Map, { Marker, Popup, NavigationControl, ScaleControl, Layer, Source } from 'react-map-gl';
+import Map, { Marker, Popup, NavigationControl, ScaleControl } from 'react-map-gl';
 import { Layers } from 'lucide-react';
 import { Memo } from '@/types/memo';
 import { getUserColor } from '@/lib/utils/formatters';
@@ -8,7 +8,6 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 interface MapViewProps {
   memos: Memo[];
   onMemoClick: (memo: Memo) => void;
-  selectedMemoId?: string | null;
 }
 
 // Map style options optimized for park workers
@@ -33,7 +32,6 @@ const MAP_STYLES = {
 export const MapView: React.FC<MapViewProps> = ({
   memos,
   onMemoClick,
-  selectedMemoId,
 }) => {
   // Default map center (can be configured via env)
   const defaultLat = parseFloat(import.meta.env.VITE_DEFAULT_MAP_LAT || '45.6789');

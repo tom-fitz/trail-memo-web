@@ -91,7 +91,6 @@ export const MapPage: React.FC = () => {
             <MapView
               memos={[]}
               onMemoClick={handleMemoClick}
-              selectedMemoId={selectedMemo?.memo_id}
             />
             <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-[1000] pointer-events-none">
               <div className="text-center bg-white p-6 rounded-lg shadow-lg pointer-events-auto">
@@ -105,7 +104,6 @@ export const MapPage: React.FC = () => {
             <MapView
               memos={memos}
               onMemoClick={handleMemoClick}
-              selectedMemoId={selectedMemo?.memo_id}
             />
             {/* Show info message if no memos, but keep map visible */}
             {memos.length === 0 && !isLoading && (
