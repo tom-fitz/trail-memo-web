@@ -32,3 +32,13 @@ html, body, #root {
   max-width: 250px;
 }
 
+/* Waypoint marker animations */
+.waypoint-marker {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.waypoint-marker:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2));
+}
+

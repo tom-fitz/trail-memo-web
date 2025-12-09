@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Edit3 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
@@ -12,12 +12,14 @@ interface MemoDetailModalProps {
   memo: Memo | null;
   isOpen: boolean;
   onClose: () => void;
+  onEditLocation?: (memo: Memo) => void;
 }
 
 export const MemoDetailModal: React.FC<MemoDetailModalProps> = ({
   memo,
   isOpen,
   onClose,
+  onEditLocation,
 }) => {
   const { user } = useAuth();
   const { deleteMemo, isDeleting } = useMemos();
@@ -26,6 +28,11 @@ export const MemoDetailModal: React.FC<MemoDetailModalProps> = ({
   if (!memo) return null;
 
   const isOwner = user?.uid === memo.user_id;
+
+  const handleEditLocation = () => {
+    onClose();
+    onEditLocation?.(memo);
+  };
 
   const handleDelete = () => {
     if (!showDeleteConfirm) {
@@ -51,10 +58,22 @@ export const MemoDetailModal: React.FC<MemoDetailModalProps> = ({
       <MemoCard memo={memo} />
 
       {/* Action Buttons */}
-      <div className="mt-6 flex gap-3 justify-end border-t pt-4">
-        {isOwner && (
-          <>
-            {showDeleteConfirm ? (
+      <div className="mt-6 flex gap-3 justify-between border-t pt-4">
+        {isOwner && onEditLocation && !showDeleteConfirm && (
+          <Button
+            variant="secondary"
+            onClick={handleEditLocation}
+            title="Edit memo location on map"
+          >
+            <Edit3 className="w-4 h-4 mr-2" />
+            Edit Location
+          </Button>
+        )}
+        
+        <div className="flex gap-3 ml-auto">
+          {isOwner && (
+            <>
+              {showDeleteConfirm ? (
               <div className="flex gap-2 items-center">
                 <span className="text-sm text-gray-600">Are you sure?</span>
                 <Button
@@ -82,11 +101,12 @@ export const MemoDetailModal: React.FC<MemoDetailModalProps> = ({
                 Delete Memo
               </Button>
             )}
-          </>
-        )}
-        <Button variant="secondary" onClick={onClose}>
-          Close
-        </Button>
+            </>
+          )}
+          <Button variant="secondary" onClick={onClose}>
+            Close
+          </Button>
+        </div>
       </div>
     </Modal>
   );

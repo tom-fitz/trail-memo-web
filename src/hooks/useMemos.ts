@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { memosApi } from '@/lib/api/memos';
+import { memosApi, CreateMemoData } from '@/lib/api/memos';
 
 export const useMemos = () => {
   const queryClient = useQueryClient();
@@ -18,6 +18,23 @@ export const useMemos = () => {
     },
   });
 
+  const createMutation = useMutation({
+    mutationFn: (data: CreateMemoData) => memosApi.create(data),
+    onSuccess: () => {
+      // Invalidate and refetch memos after creation
+      queryClient.invalidateQueries({ queryKey: ['memos'] });
+    },
+  });
+
+  const updateLocationMutation = useMutation({
+    mutationFn: ({ id, latitude, longitude }: { id: string; latitude: number; longitude: number }) =>
+      memosApi.updateLocation(id, latitude, longitude),
+    onSuccess: () => {
+      // Invalidate and refetch memos after location update
+      queryClient.invalidateQueries({ queryKey: ['memos'] });
+    },
+  });
+
   return {
     memos: data?.memos || [],
     isLoading,
@@ -25,6 +42,10 @@ export const useMemos = () => {
     refetch,
     deleteMemo: deleteMutation.mutate,
     isDeleting: deleteMutation.isPending,
+    createMemo: createMutation.mutateAsync,
+    isCreating: createMutation.isPending,
+    updateMemoLocation: updateLocationMutation.mutateAsync,
+    isUpdatingLocation: updateLocationMutation.isPending,
   };
 };
 
