@@ -18,6 +18,8 @@ export const memosApi = {
     user_id?: string;
   }): Promise<MemosResponse> => {
     const response = await apiClient.get('/memos', { params });
+    console.log('🔍 API Response from /memos:', response.data);
+    console.log('🔍 First memo structure:', response.data.memos?.[0]);
     return response.data;
   },
 

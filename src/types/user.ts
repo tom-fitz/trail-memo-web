@@ -3,6 +3,7 @@ export interface User {
   email: string;
   display_name: string | null;
   department: string | null;
+  color: string;
   created_at: string;
 }
 

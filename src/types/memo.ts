@@ -2,6 +2,7 @@ export interface Memo {
   memo_id: string;
   user_id: string;
   user_name: string;
+  user_color: string;
   title: string | null;
   audio_url: string;
   text: string;

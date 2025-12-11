@@ -1,19 +1,35 @@
 import React from 'react';
-import { MapPin, Calendar, User } from 'lucide-react';
+import { MapPin, Calendar } from 'lucide-react';
 import { Memo } from '@/types/memo';
-import { formatRelativeTime, formatCoordinates } from '@/lib/utils/formatters';
+import { formatRelativeTime, formatCoordinates, getUserColor } from '@/lib/utils/formatters';
 
 interface MemoCardProps {
   memo: Memo;
 }
 
 export const MemoCard: React.FC<MemoCardProps> = ({ memo }) => {
+  const userColor = getUserColor(memo.user_id, memo.user_color);
+  
+  // Get user initials from name
+  const getUserInitials = (name: string): string => {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  };
+  
   return (
     <div className="space-y-4">
       {/* User and Date Info */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <User className="w-5 h-5 text-gray-400" />
+          <div 
+            className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold"
+            style={{ backgroundColor: userColor }}
+          >
+            {getUserInitials(memo.user_name)}
+          </div>
           <span className="font-semibold text-gray-900">{memo.user_name}</span>
         </div>
         <div className="flex items-center gap-1 text-sm text-gray-500">

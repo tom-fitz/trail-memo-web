@@ -14,7 +14,7 @@ interface MapViewProps {
   onMarkerDrag?: (memoId: string, lat: number, lng: number) => void;
   currentUserId?: string;
   tempEditedLocation?: { lat: number; lng: number } | null;
-  uniqueUsers: { id: string; name: string }[];
+  uniqueUsers: { id: string; name: string; color: string }[];
   selectedUserIds: Set<string>;
   onToggleUserFilter: (userId: string) => void;
 }
@@ -288,7 +288,7 @@ export const MapView: React.FC<MapViewProps> = ({
                   <div className="py-1">
                     {uniqueUsers.map((user) => {
                       const isSelected = selectedUserIds.has(user.id);
-                      const userColor = getUserColor(user.id);
+                      const userColor = getUserColor(user.id, user.color);
                       const userInitials = getUserInitials(user.name);
                       
                       return (
@@ -378,7 +378,7 @@ export const MapView: React.FC<MapViewProps> = ({
         {memos.map((memo) => {
           if (!memo.location) return null;
 
-          const markerColor = getUserColor(memo.user_id);
+          const markerColor = getUserColor(memo.user_id, memo.user_color);
           const initials = getUserInitials(memo.user_name);
           
           // Create a lighter tint for gradient
@@ -509,7 +509,7 @@ export const MapView: React.FC<MapViewProps> = ({
               <div className="flex items-start gap-2 mb-2">
                 <div
                   className="w-3 h-3 rounded-full mt-1"
-                  style={{ backgroundColor: getUserColor(popupInfo.user_id) }}
+                  style={{ backgroundColor: getUserColor(popupInfo.user_id, popupInfo.user_color) }}
                 />
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900">{popupInfo.user_name}</h3>

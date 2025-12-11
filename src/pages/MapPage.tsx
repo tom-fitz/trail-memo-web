@@ -24,12 +24,14 @@ export const MapPage: React.FC = () => {
 
   // Get unique users from memos
   const uniqueUsers = useMemo(() => {
-    const userMap = new Map<string, { id: string; name: string }>();
+    const userMap = new Map<string, { id: string; name: string; color: string }>();
+    console.log('memos', memos);
     memos.forEach((memo) => {
       if (!userMap.has(memo.user_id)) {
         userMap.set(memo.user_id, {
           id: memo.user_id,
           name: memo.user_name || 'Unknown User',
+          color: memo.user_color,
         });
       }
     });

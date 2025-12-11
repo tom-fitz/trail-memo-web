@@ -29,7 +29,13 @@ apiClient.interceptors.request.use(
 
 // Handle response errors
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Debug logging for memo responses
+    if (response.config.url?.includes('/memos')) {
+      console.log('🌐 Raw API response for', response.config.url, ':', response.data);
+    }
+    return response;
+  },
   (error) => {
     console.error('API Error:', error.response?.data || error.message);
     return Promise.reject(error);
