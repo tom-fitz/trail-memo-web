@@ -4,12 +4,19 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
+import { AudioRecorder } from './AudioRecorder';
+import { AudioRecording } from '@/hooks/useAudioRecorder';
 
 interface CreateMemoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  location: { lat: number; lng: number } | null;
-  onSubmit: (data: { text: string; title?: string; park_name?: string }) => Promise<void>;
+  location: { lat: number; lng: number; accuracy?: number } | null;
+  onSubmit: (data: {
+    text: string;
+    title?: string;
+    park_name?: string;
+    audio?: AudioRecording;
+  }) => Promise<void>;
 }
 
 export const CreateMemoModal: React.FC<CreateMemoModalProps> = ({
@@ -21,6 +28,7 @@ export const CreateMemoModal: React.FC<CreateMemoModalProps> = ({
   const [text, setText] = useState('');
   const [title, setTitle] = useState('');
   const [parkName, setParkName] = useState('');
+  const [recording, setRecording] = useState<AudioRecording | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -40,12 +48,14 @@ export const CreateMemoModal: React.FC<CreateMemoModalProps> = ({
         text: text.trim(),
         title: title.trim() || undefined,
         park_name: parkName.trim() || undefined,
+        audio: recording ?? undefined,
       });
-      
+
       // Reset form
       setText('');
       setTitle('');
       setParkName('');
+      setRecording(null);
       onClose();
     } catch (err: any) {
       console.error('Create memo error:', err);
@@ -60,6 +70,7 @@ export const CreateMemoModal: React.FC<CreateMemoModalProps> = ({
       setText('');
       setTitle('');
       setParkName('');
+      setRecording(null);
       setError('');
       onClose();
     }
@@ -74,9 +85,16 @@ export const CreateMemoModal: React.FC<CreateMemoModalProps> = ({
             <MapPin className="w-4 h-4" />
             <span>
               Location: {location.lat.toFixed(6)}°, {location.lng.toFixed(6)}°
+              {location.accuracy !== undefined && ` (±${Math.round(location.accuracy)}m)`}
             </span>
           </div>
         )}
+
+        {/* Voice recording (optional) — live transcript fills the text box */}
+        <AudioRecorder
+          onTranscriptChange={setText}
+          onRecordingChange={setRecording}
+        />
 
         {/* Title (optional) */}
         <Input

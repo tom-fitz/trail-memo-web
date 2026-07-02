@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import Map, { Marker, Popup, NavigationControl, ScaleControl } from 'react-map-gl';
+import Map, { Marker, Popup, NavigationControl, ScaleControl, GeolocateControl } from 'react-map-gl';
 import { Layers, Filter } from 'lucide-react';
 import { Memo } from '@/types/memo';
 import { getUserColor } from '@/lib/utils/formatters';
@@ -207,6 +207,12 @@ export const MapView: React.FC<MapViewProps> = ({
         }} // Enhanced atmospheric effect
       >
         {/* Map Controls */}
+        <GeolocateControl
+          position="top-right"
+          positionOptions={{ enableHighAccuracy: true }}
+          trackUserLocation
+          showUserHeading
+        />
         <NavigationControl position="top-right" showCompass={true} />
         <ScaleControl position="bottom-right" />
 
@@ -355,7 +361,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
         {/* Legend for parks/trails (only show on outdoors style) */}
         {mapStyle === 'outdoors' && (
-          <div className="absolute bottom-20 left-4 bg-white rounded-lg shadow-lg p-3 text-xs z-10">
+          <div className="hidden sm:block absolute bottom-20 left-4 bg-white rounded-lg shadow-lg p-3 text-xs z-10">
             <div className="font-semibold text-gray-800 mb-2">Map Legend</div>
             <div className="space-y-1">
               <div className="flex items-center gap-2">

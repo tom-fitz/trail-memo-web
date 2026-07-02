@@ -18,7 +18,7 @@ export default defineConfig({
         description: 'Drop memos on the map, out on the trail.',
         start_url: '/',
         display: 'standalone',
-        theme_color: '#2563eb',
+        theme_color: '#ffffff',
         background_color: '#ffffff',
         icons: [
           { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },

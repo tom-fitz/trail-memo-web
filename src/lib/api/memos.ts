@@ -7,6 +7,10 @@ export interface CreateMemoData {
   park_name?: string;
   latitude: number;
   longitude: number;
+  accuracy?: number;
+  audio?: Blob;
+  audioMimeType?: string;
+  durationSeconds?: number;
 }
 
 export const memosApi = {
@@ -29,18 +33,29 @@ export const memosApi = {
     return response.data;
   },
 
-  // Create new memo (text-only from web)
+  // Create new memo (typed text, optionally with a voice recording)
   create: async (data: CreateMemoData): Promise<Memo> => {
-    // Create a minimal silent audio file (1 second of silence)
-    const silentAudio = createSilentAudio();
-    
+    const hasRecording = !!data.audio;
+    const audioBlob = data.audio ?? createSilentAudio();
+    const filename = hasRecording
+      ? data.audioMimeType?.includes('mp4')
+        ? 'memo.m4a'
+        : 'memo.webm'
+      : 'memo.m4a';
+
     const formData = new FormData();
-    formData.append('audio', silentAudio, 'memo.m4a');
+    formData.append('audio', audioBlob, filename);
     formData.append('text', data.text);
-    formData.append('duration_seconds', '1');
+    formData.append(
+      'duration_seconds',
+      String(hasRecording ? data.durationSeconds ?? 1 : 1)
+    );
     formData.append('latitude', data.latitude.toString());
     formData.append('longitude', data.longitude.toString());
-    
+
+    if (data.accuracy !== undefined) {
+      formData.append('location_accuracy', data.accuracy.toString());
+    }
     if (data.title) {
       formData.append('title', data.title);
     }

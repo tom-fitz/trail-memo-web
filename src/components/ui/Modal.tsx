@@ -30,15 +30,19 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black bg-opacity-50"
         onClick={onClose}
       />
-      
-      {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+
+      {/* Modal: bottom sheet on phones, centered dialog on sm+ */}
+      <div className="modal-sheet sm:animate-none relative bg-white rounded-t-2xl sm:rounded-lg shadow-xl w-full sm:max-w-2xl sm:mx-4 max-h-[92dvh] sm:max-h-[90vh] overflow-hidden flex flex-col pb-[env(safe-area-inset-bottom)] sm:pb-0">
+        {/* Drag handle (mobile only) */}
+        <div className="sm:hidden pt-2 flex justify-center">
+          <span className="h-1 w-10 rounded-full bg-gray-300" />
+        </div>
         {/* Header */}
         {title && (
           <div className="flex items-center justify-between p-4 border-b">

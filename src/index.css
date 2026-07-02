@@ -32,6 +32,29 @@ html, body, #root {
   max-width: 250px;
 }
 
+/* Mobile native feel */
+html, body {
+  overscroll-behavior: none;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a, input[type='range'] {
+  touch-action: manipulation;
+}
+
+/* Bottom-sheet slide-up (Modal.tsx, <sm only) */
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-sheet {
+  animation: sheet-up 0.25s ease-out;
+}
+
 /* Waypoint marker animations */
 .waypoint-marker {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);

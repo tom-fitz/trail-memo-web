@@ -4,6 +4,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { MemoCard } from './MemoCard';
+import { AudioPlayer } from './AudioPlayer';
 import { Memo } from '@/types/memo';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemos } from '@/hooks/useMemos';
@@ -57,8 +58,15 @@ export const MemoDetailModal: React.FC<MemoDetailModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} title="Memo Details">
       <MemoCard memo={memo} />
 
+      {/* Voice recording playback (hidden for text-only placeholder audio) */}
+      {memo.audio_url && memo.duration_seconds > 1 && (
+        <div className="mt-4">
+          <AudioPlayer src={memo.audio_url} durationSeconds={memo.duration_seconds} />
+        </div>
+      )}
+
       {/* Action Buttons */}
-      <div className="mt-6 flex gap-3 justify-between border-t pt-4">
+      <div className="mt-6 flex flex-wrap gap-3 justify-between border-t pt-4">
         {isOwner && onEditLocation && !showDeleteConfirm && (
           <Button
             variant="secondary"

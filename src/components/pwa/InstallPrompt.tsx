@@ -76,7 +76,7 @@ export const InstallPrompt = () => {
   if (!showIosSteps && !installEvent) return null;
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-50 rounded-xl bg-white p-4 shadow-xl ring-1 ring-gray-200">
+    <div className="fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] sm:bottom-4 z-50 rounded-xl bg-white p-4 shadow-xl ring-1 ring-gray-200">
       <button
         onClick={dismiss}
         aria-label="Dismiss install prompt"

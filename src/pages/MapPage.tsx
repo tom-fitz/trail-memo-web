@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { LogOut, RefreshCw, Plus, Save, X } from 'lucide-react';
+import { LogOut, RefreshCw, Plus, Save, X, LocateFixed } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemos } from '@/hooks/useMemos';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { AudioRecording } from '@/hooks/useAudioRecorder';
 import { MapView } from '@/components/map/MapView';
 import { MemoDetailModal } from '@/components/memos/MemoDetailModal';
 import { CreateMemoModal } from '@/components/memos/CreateMemoModal';
@@ -15,8 +17,14 @@ export const MapPage: React.FC = () => {
   const [selectedMemo, setSelectedMemo] = useState<Memo | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [newMemoLocation, setNewMemoLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [newMemoLocation, setNewMemoLocation] = useState<{
+    lat: number;
+    lng: number;
+    accuracy?: number;
+  } | null>(null);
   const [isPlacementMode, setIsPlacementMode] = useState(false);
+  const { locate, isLocating } = useGeolocation();
+  const [geoError, setGeoError] = useState<string | null>(null);
   const [editingMemo, setEditingMemo] = useState<Memo | null>(null);
   const [editedLocation, setEditedLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -85,13 +93,36 @@ export const MapPage: React.FC = () => {
     setIsPlacementMode(false);
   };
 
-  const handleCreateMemo = async (data: { text: string; title?: string; park_name?: string }) => {
+  const handleCreateAtMyLocation = async () => {
+    setGeoError(null);
+    setIsPlacementMode(false);
+    try {
+      const position = await locate();
+      setNewMemoLocation(position);
+      setIsCreateModalOpen(true);
+    } catch (err) {
+      setGeoError(err instanceof Error ? err.message : 'Could not get your location.');
+    }
+  };
+
+  const handleCreateMemo = async (data: {
+    text: string;
+    title?: string;
+    park_name?: string;
+    audio?: AudioRecording;
+  }) => {
     if (!newMemoLocation) return;
 
     await createMemo({
-      ...data,
+      text: data.text,
+      title: data.title,
+      park_name: data.park_name,
       latitude: newMemoLocation.lat,
       longitude: newMemoLocation.lng,
+      accuracy: newMemoLocation.accuracy,
+      audio: data.audio?.blob,
+      audioMimeType: data.audio?.mimeType,
+      durationSeconds: data.audio?.durationSeconds,
     });
 
     setNewMemoLocation(null);
@@ -153,7 +184,7 @@ export const MapPage: React.FC = () => {
   return (
     <div className="h-screen w-screen flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm z-10">
+      <header className="bg-white shadow-sm z-10 pt-[env(safe-area-inset-top)]">
         <div className="flex items-center justify-between px-4 py-3">
           {/* Left side - Logo and memo count */}
           <div className="flex items-center gap-3">
@@ -170,7 +201,7 @@ export const MapPage: React.FC = () => {
           </div>
 
           {/* Center - New Memo button */}
-          <div className="absolute left-1/2 transform -translate-x-1/2">
+          <div className="absolute left-1/2 transform -translate-x-1/2 hidden sm:flex gap-2">
             <Button
               variant={isPlacementMode ? 'danger' : 'primary'}
               onClick={isPlacementMode ? handleCancelPlacement : handleStartPlacement}
@@ -179,6 +210,22 @@ export const MapPage: React.FC = () => {
             >
               <Plus className="w-4 h-4 mr-2" />
               <span>New Memo</span>
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleCreateAtMyLocation}
+              disabled={isLocating}
+              title="Create a memo at your current location"
+              className="flex items-center whitespace-nowrap"
+            >
+              {isLocating ? (
+                <Spinner size="sm" />
+              ) : (
+                <>
+                  <LocateFixed className="w-4 h-4 mr-2" />
+                  <span>Memo Here</span>
+                </>
+              )}
             </Button>
           </div>
 
@@ -207,14 +254,24 @@ export const MapPage: React.FC = () => {
 
       {/* Placement mode indicator */}
       {isPlacementMode && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-[1000] bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg">
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-[1000] max-w-[calc(100vw-2rem)] bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg">
           <p className="font-medium">📍 Click anywhere on the map to place your memo</p>
+        </div>
+      )}
+
+      {/* Geolocation error */}
+      {geoError && (
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-[1000] max-w-[calc(100vw-2rem)] bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
+          <p className="text-sm font-medium">{geoError}</p>
+          <button onClick={() => setGeoError(null)} className="text-red-600 hover:text-red-800">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
       {/* Edit mode controls */}
       {editingMemo && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-[1000] bg-white px-6 py-4 rounded-lg shadow-xl border-2 border-blue-500">
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-[1000] max-w-[calc(100vw-2rem)] bg-white px-6 py-4 rounded-lg shadow-xl border-2 border-blue-500">
           <p className="font-medium text-gray-800 mb-3">🎯 Drag the marker to a new location</p>
           <div className="flex gap-3">
             <Button
@@ -309,6 +366,42 @@ export const MapPage: React.FC = () => {
             )}
           </>
         )}
+
+        {/* Mobile bottom action bar (thumb zone) */}
+        <div className="sm:hidden absolute inset-x-0 bottom-0 z-20 flex justify-center gap-3 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pointer-events-none">
+          <Button
+            variant="primary"
+            onClick={handleCreateAtMyLocation}
+            disabled={isLocating}
+            className="pointer-events-auto shadow-lg flex items-center whitespace-nowrap rounded-full px-5"
+          >
+            {isLocating ? (
+              <Spinner size="sm" />
+            ) : (
+              <>
+                <LocateFixed className="w-4 h-4 mr-2" />
+                <span>Memo Here</span>
+              </>
+            )}
+          </Button>
+          <Button
+            variant={isPlacementMode ? 'danger' : 'secondary'}
+            onClick={isPlacementMode ? handleCancelPlacement : handleStartPlacement}
+            className="pointer-events-auto shadow-lg flex items-center whitespace-nowrap rounded-full px-5"
+          >
+            {isPlacementMode ? (
+              <>
+                <X className="w-4 h-4 mr-2" />
+                <span>Cancel</span>
+              </>
+            ) : (
+              <>
+                <Plus className="w-4 h-4 mr-2" />
+                <span>Place on Map</span>
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Memo Detail Modal */}
