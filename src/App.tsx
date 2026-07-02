@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { UpdateToast } from '@/components/pwa/UpdateToast';
+import { InstallPrompt } from '@/components/pwa/InstallPrompt';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
@@ -35,6 +37,8 @@ function App() {
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <UpdateToast />
+          <InstallPrompt />
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>

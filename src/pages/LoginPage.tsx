@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
+import { Mic } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -42,7 +43,12 @@ export const LoginPage: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h1 className="text-4xl font-bold text-center text-gray-900">
+          <div className="flex justify-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-600">
+              <Mic size={40} className="text-white" />
+            </div>
+          </div>
+          <h1 className="mt-4 text-4xl font-bold text-center text-gray-900">
             TrailMemo
           </h1>
           <p className="mt-2 text-center text-gray-600">
