@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { LogOut, RefreshCw, Plus, Save, X, LocateFixed } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { LogOut, RefreshCw, Plus, Save, X, LocateFixed, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMemos } from '@/hooks/useMemos';
 import { useGeolocation } from '@/hooks/useGeolocation';
@@ -12,7 +13,8 @@ import { Spinner } from '@/components/ui/Spinner';
 import { Memo } from '@/types/memo';
 
 export const MapPage: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const { memos, isLoading, error, refetch, createMemo, updateMemoLocation } = useMemos();
   const [selectedMemo, setSelectedMemo] = useState<Memo | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -231,6 +233,15 @@ export const MapPage: React.FC = () => {
 
           {/* Right side - Actions and user info */}
           <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/admin')}
+                title="Manage approved users"
+              >
+                <Users className="w-5 h-5" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               onClick={handleRefresh}

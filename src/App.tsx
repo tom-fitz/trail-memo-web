@@ -5,8 +5,8 @@ import { UpdateToast } from '@/components/pwa/UpdateToast';
 import { InstallPrompt } from '@/components/pwa/InstallPrompt';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { LoginPage } from '@/pages/LoginPage';
-import { RegisterPage } from '@/pages/RegisterPage';
 import { MapPage } from '@/pages/MapPage';
+import { AdminPage } from '@/pages/AdminPage';
 
 // Create a React Query client
 const queryClient = new QueryClient({
@@ -26,7 +26,15 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/register" element={<Navigate to="/login" replace />} />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/"
               element={

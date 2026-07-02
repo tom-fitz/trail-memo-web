@@ -4,6 +4,7 @@ export interface User {
   display_name: string | null;
   department: string | null;
   color: string;
+  is_admin: boolean;
   created_at: string;
 }
 

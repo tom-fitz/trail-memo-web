@@ -1,20 +1,34 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import {
   User as FirebaseUser,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
+  GoogleAuthProvider,
   onAuthStateChanged,
+  signInWithPopup,
+  signOut,
 } from 'firebase/auth';
+import { isAxiosError } from 'axios';
 import { auth } from '@/lib/firebase/config';
 import { authApi } from '@/lib/api/auth';
-import { RegisterData } from '@/types/user';
+import { User } from '@/types/user';
+
+export class NotApprovedError extends Error {
+  constructor() {
+    super("Your Google account isn't on the approved list. Contact your administrator for access.");
+    this.name = 'NotApprovedError';
+  }
+}
+
+const isNotApproved = (err: unknown): boolean =>
+  isAxiosError(err) &&
+  err.response?.status === 403 &&
+  err.response.data?.error?.code === 'NOT_APPROVED';
 
 interface AuthContextType {
   user: FirebaseUser | null;
+  profile: User | null;
+  isAdmin: boolean;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, userData: RegisterData) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -30,32 +44,68 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  // loginWithGoogle drives its own profile fetch; skip the listener's
+  const loginInProgressRef = useRef(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      setUser(fbUser);
+      if (!fbUser) {
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+      if (loginInProgressRef.current) {
+        setLoading(false);
+        return;
+      }
+      try {
+        setProfile(await authApi.getMe());
+      } catch {
+        // stale session, unapproved, or removed from the allowlist
+        await signOut(auth);
+      } finally {
+        setLoading(false);
+      }
     });
 
     return unsubscribe;
   }, []);
 
-  const login = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
-  };
-
-  const register = async (email: string, password: string, userData: RegisterData) => {
-    // Create Firebase account
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    
-    // Create user record in backend database
+  const loginWithGoogle = async () => {
+    loginInProgressRef.current = true;
     try {
-      await authApi.register(userData);
-    } catch (error) {
-      // If backend registration fails, delete Firebase user
-      await userCredential.user.delete();
-      throw error;
+      const credential = await signInWithPopup(auth, new GoogleAuthProvider());
+      try {
+        let me: User;
+        try {
+          me = await authApi.getMe();
+        } catch (err) {
+          if (isAxiosError(err) && err.response?.status === 404) {
+            // First sign-in: create the backend account from the Google profile
+            me = await authApi.register({
+              display_name:
+                credential.user.displayName ||
+                credential.user.email?.split('@')[0] ||
+                'Unknown User',
+              department: '',
+            });
+          } else {
+            throw err;
+          }
+        }
+        setProfile(me);
+      } catch (err) {
+        await signOut(auth);
+        if (isNotApproved(err)) {
+          throw new NotApprovedError();
+        }
+        throw err;
+      }
+    } finally {
+      loginInProgressRef.current = false;
     }
   };
 
@@ -65,12 +115,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value = {
     user,
+    profile,
+    isAdmin: profile?.is_admin ?? false,
     loading,
-    login,
-    register,
+    loginWithGoogle,
     logout,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
