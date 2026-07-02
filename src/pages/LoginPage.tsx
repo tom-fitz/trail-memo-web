@@ -47,7 +47,9 @@ export const LoginPage: React.FC = () => {
       } else if (code === 'auth/popup-blocked') {
         setError('Your browser blocked the sign-in popup. Allow popups and try again.');
       } else {
-        setError('Failed to sign in. Please try again.');
+        // Surface the underlying error so failures in the field are diagnosable
+        const detail = err instanceof Error ? err.message : String(err);
+        setError(`Failed to sign in${code ? ` (${code})` : ''}: ${detail}`);
       }
     } finally {
       setLoading(false);

@@ -19,6 +19,8 @@ Assessment from 2026-07-02 code review (all three repos). Ordered by priority wi
 10. **Marker clustering** (Mapbox clusters) before memo count makes the map unreadable.
 11. **Tests + CI.** Zero automated tests in any repo; add a GitHub Action with lint + `tsc --noEmit` + `go test` as a floor.
 
+12. **Run migrations on deploy.** Code ships to Railway automatically but schema changes are manual (bit us 2026-07-02: deployed SSO code before migration 004 existed in prod → `column "is_admin" does not exist`). Run migrations at API startup or as a Railway pre-deploy step; fix the `make migrate` `DATABASE_PUBLIC_URL`/JDBC variable bug at the same time.
+
 ## Honorable mentions
 
 - Marker `lighterColor` trick assumes HSL-string user colors; silently no-ops otherwise.
