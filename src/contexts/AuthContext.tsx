@@ -3,7 +3,7 @@ import {
   User as FirebaseUser,
   GoogleAuthProvider,
   onAuthStateChanged,
-  signInWithPopup,
+  signInWithCredential,
   signOut,
 } from 'firebase/auth';
 import { isAxiosError } from 'axios';
@@ -28,7 +28,7 @@ interface AuthContextType {
   profile: User | null;
   isAdmin: boolean;
   loading: boolean;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogleIdToken: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -74,10 +74,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return unsubscribe;
   }, []);
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogleIdToken = async (idToken: string) => {
     loginInProgressRef.current = true;
     try {
-      const credential = await signInWithPopup(auth, new GoogleAuthProvider());
+      const credential = await signInWithCredential(
+        auth,
+        GoogleAuthProvider.credential(idToken)
+      );
       try {
         let me: User;
         try {
@@ -118,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     profile,
     isAdmin: profile?.is_admin ?? false,
     loading,
-    loginWithGoogle,
+    loginWithGoogleIdToken,
     logout,
   };
 
